@@ -24,13 +24,16 @@ ORDER BY month_date;
 -- ============================================================
 -- Q2. National on-time arrival rate by year, 2015-2025, with year-over-year
 --     change (LAG) -- surfaces the 2022 post-reopening reliability crisis
+--     Uses BITRE's nationwide "All Ports-All Ports" row: it covers every
+--     domestic flight, while the published route rows cover only the larger
+--     routes (~76% of 2025 sectors).
 -- ============================================================
 WITH yearly AS (
     SELECT
         year,
         ROUND(100.0 * SUM(arrivals_on_time) / NULLIF(SUM(sectors_flown), 0), 1) AS on_time_rate_pct
     FROM `airline_ontime.flights_monthly`
-    WHERE is_all_airlines AND NOT is_national_total AND year BETWEEN 2015 AND 2025
+    WHERE is_all_airlines AND is_national_total AND year BETWEEN 2015 AND 2025
     GROUP BY year
 )
 SELECT

@@ -17,7 +17,7 @@ Australian domestic aviation has been through a total COVID shutdown, a chaotic 
 
 **Data-quality decisions made before analysis (not assumed):**
 - BITRE includes its own **"All Airlines" rollup row** per route/month. Verified directly (Adelaide–Brisbane, Jun-2019: Jetstar 22 + Qantas 103 + QantasLink 1 + Tigerair 30 + Virgin 102 = 258 sectors flown = the "All Airlines" row for that route/month exactly) — a true sum, not a separate estimate. Flagged as `is_all_airlines` so per-airline queries can exclude it and route-total queries can use it directly instead of re-summing.
-- BITRE also includes an **"All Ports-All Ports" nationwide rollup row** (appears under every individual airline too, not just "All Airlines") — flagged as `is_national_total` and excluded from all route-level analysis.
+- BITRE also includes an **"All Ports-All Ports" nationwide rollup row** (appears under every individual airline too, not just "All Airlines") — flagged as `is_national_total` and excluded from all route-level analysis. It is **not** the sum of the published route rows: it covers every domestic flight, while BITRE only publishes the larger routes individually (407,541 of 537,341 sectors in 2025, ~76%). National trends (Q1, Q2) therefore use this row.
 - 20 raw airline-name spellings collapsed data-entry inconsistencies for the same carrier: `Macair`/`MacAir` and `virgin Australia`/`Virgin Australia` were standardised in the ETL. Genuine rebrands (`Skytrans` → `Skytrans Australia`) were left as distinct entities since that reflects a real business change, not a typo.
 - `Cancellations` (316 blank rows) and `Departures_Delayed` (5 blank rows) are loaded as `NULL` via `SAFE_CAST` rather than failing the load or being coerced to zero.
 - 2026 is a partial year (7 of 12 months at analysis time) and is excluded from every year-over-year comparison.
@@ -32,7 +32,7 @@ Australian domestic aviation has been through a total COVID shutdown, a chaotic 
 
 **1. National capacity trend (2004–2026).** Monthly domestic sectors flown grew steadily from ~31,700/month (2004) to a peak of ~47,500/month (2018–19), collapsed to a low of **13,300/month at the depth of COVID (mid-2021)**, and by 2025 has recovered to ~44,700/month — **still ~6% below the pre-COVID peak**, five years on.
 
-**2. National on-time arrival rate (2015–2025).** Fell for four consecutive pre-COVID years (86.1% in 2015 → 77.5% in 2019), then — counterintuitively — *improved* during COVID lockdowns as lighter traffic meant less congestion (86.1% in 2021), before **crashing to 67.4% in 2022** (an 18.7-percentage-point single-year drop) as travel demand reopened faster than airlines could staff and schedule for it. Recovery since has been gradual: 69.4% (2023) → 73.3% (2024) → 75.8% (2025) — still below the 2019 pre-COVID rate.
+**2. National on-time arrival rate (2015–2025).** Fell for four consecutive pre-COVID years (86.0% in 2015 → 78.4% in 2019), then — counterintuitively — *improved* during COVID lockdowns as lighter traffic meant less congestion (86.2% in 2021), before **crashing to 68.8% in 2022** (a 17.4-percentage-point single-year drop) as travel demand reopened faster than airlines could staff and schedule for it. Recovery since has been gradual: 70.6% (2023) → 74.6% (2024) → 76.9% (2025) — still below the 2019 pre-COVID rate. *(Corrected 2026-11-22: the first version summed only the published route rows, which gave rates 0.1–1.4 points lower; the trend and conclusions are unchanged.)*
 
 **3. Airline reliability ranking (2025).** Among carriers with 1,000+ sectors flown: **Qantas leads at 77.3%** arrivals on time, narrowly ahead of **Virgin Australia and QantasLink (both 76.0%)**, then Rex Airlines and Jetstar (both 74.3%), with **Virgin Australia Regional Airlines trailing at 68.9%**.
 
@@ -59,7 +59,7 @@ The popular framing — "Australian aviation recovered from COVID" — is only h
 ## Limitations
 
 - BITRE's own on-time definitions and thresholds are used as-is; not independently re-derived.
-- `is_all_airlines` / `is_national_total` rollups are trusted as verified sums of the underlying rows (spot-checked, not exhaustively re-derived for all 119,038 rows) — a systematic BITRE reporting error in those specific columns would carry through undetected.
+- `is_all_airlines` rows are trusted as sums of the airline rows (spot-checked, not exhaustively re-derived for all 119,038 rows) and `is_national_total` rows are used as BITRE publishes them — a systematic BITRE reporting error in those specific columns would carry through undetected.
 - 2026 (partial year, 7 months) is excluded from all year-over-year and baseline comparisons.
 - HHI is computed on **sectors flown** as a capacity proxy, not passenger volume, seats, or revenue — a consistent basis across carriers, but not identical to how a regulator like the ACCC would formally define a route's relevant market.
 - Single BITRE data vintage (dataset as published as of the analysis date) — no comparison against a prior release to check for retrospective revisions.
